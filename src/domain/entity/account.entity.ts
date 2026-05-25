@@ -6,9 +6,11 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { AccountStatusEnum } from '../enums/account-status.enum';
 import { Customer } from './customer.entity';
+import { Transaction } from './transaction.entity';
 
 @Entity('account')
 export class Account {
@@ -36,6 +38,9 @@ export class Account {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
+
+  @OneToMany(() => Transaction, (transaction) => transaction.account)
+  transactions!: Transaction[];
 
   @ManyToOne(() => Customer, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'customer_id' })

@@ -5,11 +5,13 @@ import {
   ManyToOne,
   JoinColumn,
   Index,
+  OneToOne,
 } from 'typeorm';
 import { TransactionTypeEnum } from '../enums/transaction-type.enum';
 import { MainCategoryEnum } from '../enums/main-category.enum';
 import { Customer } from './customer.entity';
 import { Account } from './account.entity';
+import { DetectedAnomaly } from './detected-anomaly.entity';
 
 @Entity('transactions')
 @Index('idx_transactions_customer_timestamp', [
@@ -95,4 +97,7 @@ export class Transaction {
   @ManyToOne(() => Customer, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'customer_id' })
   customer!: Customer;
+
+  @OneToOne(() => DetectedAnomaly, (anomaly) => anomaly.transaction)
+  detectedAnomaly?: DetectedAnomaly;
 }

@@ -7,8 +7,10 @@ import {
   CreateDateColumn,
   Index,
   Unique,
+  OneToMany,
 } from 'typeorm';
 import { Customer } from './customer.entity';
+import { DetectedAnomaly } from './detected-anomaly.entity';
 
 @Entity('weekly_reports')
 @Unique('uq_weekly_customer_date', ['customerId', 'reportDate'])
@@ -67,4 +69,7 @@ export class WeeklyReport {
   @ManyToOne(() => Customer, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'customer_id' })
   customer!: Customer;
+
+  @OneToMany(() => DetectedAnomaly, (anomaly) => anomaly.weeklyReport)
+  detectedAnomalies!: DetectedAnomaly[];
 }

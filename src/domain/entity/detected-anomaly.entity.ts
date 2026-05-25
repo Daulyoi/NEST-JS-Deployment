@@ -6,6 +6,7 @@ import {
   JoinColumn,
   CreateDateColumn,
   Index,
+  OneToOne,
 } from 'typeorm';
 import { Customer } from './customer.entity';
 import { Transaction } from './transaction.entity';
@@ -52,7 +53,7 @@ export class DetectedAnomaly {
   @CreateDateColumn({ name: 'detected_at' })
   detectedAt!: Date;
 
-  @ManyToOne(() => Transaction, { onDelete: 'CASCADE', nullable: false })
+  @OneToOne(() => Transaction, { onDelete: 'CASCADE', nullable: false })
   @JoinColumn({ name: 'transaction_id' })
   transaction!: Transaction;
 

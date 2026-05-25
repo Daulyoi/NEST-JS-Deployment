@@ -4,7 +4,15 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
+  OneToOne,
 } from 'typeorm';
+import { Account } from './account.entity';
+import { Transaction } from './transaction.entity';
+import { UserCredentials } from './user-credentials.entity';
+import { MonthlyReport } from './monthly-report.entity';
+import { WeeklyReport } from './weekly-report.entity';
+import { DetectedAnomaly } from './detected-anomaly.entity';
 
 @Entity('customer')
 export class Customer {
@@ -74,4 +82,24 @@ export class Customer {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
+
+  @OneToMany(() => Account, (account) => account.customer)
+  accounts!: Account[];
+
+  @OneToMany(() => Transaction, (transaction) => transaction.customer)
+  transactions!: Transaction[];
+
+  @OneToMany(() => MonthlyReport, (monthlyReport) => monthlyReport.customer)
+  monthlyReports!: MonthlyReport[];
+
+  @OneToMany(() => WeeklyReport, (weeklyReport) => weeklyReport.customer)
+  weeklyReports!: WeeklyReport[];
+
+  @OneToMany(() => DetectedAnomaly, (anomaly) => anomaly.customer)
+  detectedAnomalies!: DetectedAnomaly[];
+
+  @OneToOne(() => UserCredentials, (credentials) => credentials.customer, {
+    cascade: true,
+  })
+  userCredentials!: UserCredentials;
 }
