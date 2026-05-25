@@ -88,17 +88,11 @@ export class Transaction {
   @Column({ type: 'integer', default: 0, nullable: false })
   hour: number = 0;
 
-  @ManyToOne(() => Account, (account) => account.transactions, {
-    nullable: true,
-    onDelete: 'SET NULL',
-  })
+  @ManyToOne(() => Account, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'account_id' })
   account?: Account;
 
-  @ManyToOne(() => Customer, (customer) => customer.transactions, {
-    nullable: false,
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(() => Customer, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'customer_id' })
   customer!: Customer;
 }

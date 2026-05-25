@@ -38,7 +38,7 @@ export class UserCredentials {
   })
   status!: CredentialStatusEnum;
 
-  @OneToOne(() => Customer, (customer) => customer.credentials)
+  @OneToOne(() => Customer)
   @JoinColumn({ name: 'customer_id' })
   customer!: Customer;
 }

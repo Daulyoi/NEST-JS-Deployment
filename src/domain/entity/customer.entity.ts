@@ -2,17 +2,9 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  OneToMany,
-  OneToOne,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Account } from './account.entity';
-import { Transaction } from './transaction.entity';
-import { WeeklyReport } from './weekly-report.entity';
-import { MonthlyReport } from './monthly-report.entity';
-import { DetectedAnomaly } from './detected-anomaly.entity';
-import { UserCredentials } from './user-credentials.entity';
 
 @Entity('customer')
 export class Customer {
@@ -82,22 +74,4 @@ export class Customer {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
-
-  @OneToOne(() => UserCredentials, (cred) => cred.customer)
-  credentials!: UserCredentials;
-
-  @OneToMany(() => Account, (account) => account.customer)
-  accounts!: Account[];
-
-  @OneToMany(() => Transaction, (trx) => trx.customer)
-  transactions!: Transaction[];
-
-  @OneToMany(() => WeeklyReport, (r) => r.customer)
-  weeklyReports!: WeeklyReport[];
-
-  @OneToMany(() => MonthlyReport, (r) => r.customer)
-  monthlyReports!: MonthlyReport[];
-
-  @OneToMany(() => DetectedAnomaly, (a) => a.customer)
-  anomalies!: DetectedAnomaly[];
 }

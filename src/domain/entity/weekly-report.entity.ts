@@ -64,9 +64,7 @@ export class WeeklyReport {
   @CreateDateColumn({ name: 'generated_at' })
   generatedAt!: Date;
 
-  @ManyToOne(() => Customer, (customer) => customer.weeklyReports, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(() => Customer, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'customer_id' })
   customer!: Customer;
 }

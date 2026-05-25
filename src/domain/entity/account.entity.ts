@@ -3,14 +3,12 @@ import {
   Column,
   PrimaryGeneratedColumn,
   ManyToOne,
-  OneToMany,
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { AccountStatusEnum } from '../enums/account-status.enum';
 import { Customer } from './customer.entity';
-import { Transaction } from './transaction.entity';
 
 @Entity('account')
 export class Account {
@@ -39,12 +37,7 @@ export class Account {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
 
-  @ManyToOne(() => Customer, (customer) => customer.accounts, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(() => Customer, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'customer_id' })
   customer!: Customer;
-
-  @OneToMany(() => Transaction, (trx) => trx.account)
-  transactions!: Transaction[];
 }

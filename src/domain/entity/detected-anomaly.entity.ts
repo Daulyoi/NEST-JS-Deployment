@@ -56,7 +56,7 @@ export class DetectedAnomaly {
   @JoinColumn({ name: 'transaction_id' })
   transaction!: Transaction;
 
-  @ManyToOne(() => Customer, (c) => c.anomalies, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Customer, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'customer_id' })
   customer!: Customer;
 
