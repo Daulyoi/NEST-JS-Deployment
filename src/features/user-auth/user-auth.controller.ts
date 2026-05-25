@@ -11,7 +11,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RequireAuth } from '../../auth/decorators/auth.decorator';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { AuthGuard } from '../../auth/guards/auth.guard';
-import { ICurrentUser } from '../../auth/interfaces/current-user.interface';
+import type { ICurrentUser } from '../../auth/interfaces/current-user.interface';
 import {
   DataResponse,
   MessageResponse,
