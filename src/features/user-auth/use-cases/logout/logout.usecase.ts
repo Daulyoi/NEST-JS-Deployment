@@ -11,8 +11,11 @@ export class LogoutUseCase {
   ) {}
 
   async execute(credentialId: string): Promise<void> {
-    await this.credentialsRepository.update(credentialId, {
-      activeToken: undefined,
-    });
+    await this.credentialsRepository
+      .createQueryBuilder()
+      .update()
+      .set({ activeToken: () => 'NULL' })
+      .where('id = :id', { id: credentialId })
+      .execute();
   }
 }
