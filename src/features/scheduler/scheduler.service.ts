@@ -26,6 +26,12 @@ export class SchedulerService {
     return this.config.get<string>('app.fastapi.internalKey') ?? '';
   }
 
+  private isLastDayOfMonth(): boolean {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.getDate() === 1;
+  }
+
   private get schedulerHeaders(): Record<string, string> {
     return {
       'Content-Type': 'application/json',
@@ -51,9 +57,10 @@ export class SchedulerService {
     }
   }
 
-  // Last day of month 23:59 WIB (UTC+7 → UTC 16:59 last day)
-  @Cron('59 16 L * *')
+  // Last day of month 23:59 WIB (UTC+7 → UTC 16:59); runs 28-31 and guards on actual last day
+  @Cron('59 16 28-31 * *')
   async triggerMonthlyReport(): Promise<void> {
+    if (!this.isLastDayOfMonth()) return;
     this.logger.log('Triggering monthly scheduler...');
     try {
       const response = await firstValueFrom(
@@ -69,10 +76,10 @@ export class SchedulerService {
     }
   }
 
-  // Reset wants/needs ratio on 1st of month 00:00 WIB
-  // (UTC 17:00 on last day = WIB 00:00 next day = tanggal 1)
-  @Cron('0 17 L * *')
+  // Reset wants/needs ratio at WIB midnight on 1st (UTC 17:00 last day)
+  @Cron('0 17 28-31 * *')
   async resetMonthlyRatios(): Promise<void> {
+    if (!this.isLastDayOfMonth()) return;
     this.logger.log('Resetting monthly ratios to 0...');
     try {
       await this.customerRepository
