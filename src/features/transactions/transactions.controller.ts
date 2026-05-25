@@ -6,7 +6,6 @@ import {
   Param,
   Post,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -15,7 +14,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { RequireAuth } from '../../auth/decorators/auth.decorator';
-import { AuthGuard } from '../../auth/guards/auth.guard';
 import { DataResponse } from '../../infrastructure/core/http/http-response';
 import {
   CreateTransactionUseCase,
@@ -25,7 +23,6 @@ import { CreateTransactionDto } from './use-cases/create/create.dto';
 
 @ApiTags('Transactions')
 @ApiBearerAuth()
-@UseGuards(AuthGuard)
 @RequireAuth()
 @Controller('transactions')
 export class TransactionsController {

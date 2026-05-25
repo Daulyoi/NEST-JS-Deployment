@@ -4,7 +4,6 @@ import {
   HttpStatus,
   Param,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -13,13 +12,11 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { RequireAuth } from '../../auth/decorators/auth.decorator';
-import { AuthGuard } from '../../auth/guards/auth.guard';
 import { DataResponse } from '../../infrastructure/core/http/http-response';
 import { GetMonthlyReportsUseCase, GetWeeklyReportsUseCase } from './use-cases';
 
 @ApiTags('Reports')
 @ApiBearerAuth()
-@UseGuards(AuthGuard)
 @RequireAuth()
 @Controller('reports')
 export class ReportsController {

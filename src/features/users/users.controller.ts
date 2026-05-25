@@ -5,11 +5,9 @@ import {
   HttpStatus,
   Param,
   Patch,
-  UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RequireAuth } from '../../auth/decorators/auth.decorator';
-import { AuthGuard } from '../../auth/guards/auth.guard';
 import { DataResponse } from '../../infrastructure/core/http/http-response';
 import {
   GetAllUsersUseCase,
@@ -20,7 +18,6 @@ import { UpdateUserDto } from './use-cases/update/update.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
-@UseGuards(AuthGuard)
 @RequireAuth()
 @Controller('users')
 export class UsersController {

@@ -1,4 +1,5 @@
 import { Global, Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import type { StringValue } from 'ms';
@@ -15,11 +16,17 @@ import { AuthGuard } from './guards/auth.guard';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         secret: config.get<string>('app.jwt.secret'),
-        signOptions: { expiresIn: config.get<string>('app.jwt.expiresIn') as StringValue },
+        signOptions: {
+          expiresIn: config.get<string>('app.jwt.expiresIn') as StringValue,
+        },
       }),
     }),
   ],
-  providers: [AuthService, AuthGuard],
-  exports: [AuthService, AuthGuard, JwtModule],
+  providers: [
+    AuthService,
+    AuthGuard,
+    { provide: APP_GUARD, useClass: AuthGuard },
+  ],
+  exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

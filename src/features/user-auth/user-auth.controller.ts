@@ -5,12 +5,10 @@ import {
   HttpCode,
   HttpStatus,
   Post,
-  UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RequireAuth } from '../../auth/decorators/auth.decorator';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
-import { AuthGuard } from '../../auth/guards/auth.guard';
 import type { ICurrentUser } from '../../auth/interfaces/current-user.interface';
 import {
   DataResponse,
@@ -52,7 +50,6 @@ export class UserAuthController {
   }
 
   @Get('profile')
-  @UseGuards(AuthGuard)
   @RequireAuth()
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Ambil profil customer yang sedang login' })
@@ -62,7 +59,6 @@ export class UserAuthController {
   }
 
   @Post('logout')
-  @UseGuards(AuthGuard)
   @RequireAuth()
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
