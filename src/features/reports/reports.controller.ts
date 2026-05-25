@@ -36,7 +36,11 @@ export class ReportsController {
     @Query('limit') limit?: number,
   ) {
     const data = await this.getWeeklyUseCase.execute(customerId, limit ?? 10);
-    return new DataResponse(HttpStatus.OK, 'Laporan mingguan berhasil diambil', data);
+    return new DataResponse(
+      HttpStatus.OK,
+      'Laporan mingguan berhasil diambil',
+      data,
+    );
   }
 
   @Get('monthly/:customerId')
@@ -47,6 +51,10 @@ export class ReportsController {
     @Query('limit') limit?: number,
   ) {
     const data = await this.getMonthlyUseCase.execute(customerId, limit ?? 12);
-    return new DataResponse(HttpStatus.OK, 'Laporan bulanan berhasil diambil', data);
+    return new DataResponse(
+      HttpStatus.OK,
+      'Laporan bulanan berhasil diambil',
+      data,
+    );
   }
 }

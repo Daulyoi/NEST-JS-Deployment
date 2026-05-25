@@ -20,7 +20,10 @@ export class CreateTransactionDto {
   @IsUUID()
   accountId?: string;
 
-  @ApiProperty({ enum: TransactionTypeEnum, example: TransactionTypeEnum.DEBIT })
+  @ApiProperty({
+    enum: TransactionTypeEnum,
+    example: TransactionTypeEnum.DEBIT,
+  })
   @IsEnum(TransactionTypeEnum)
   transactionType!: TransactionTypeEnum;
 

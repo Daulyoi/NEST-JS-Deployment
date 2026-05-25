@@ -38,7 +38,11 @@ export class TransactionsController {
   @ApiOperation({ summary: 'Tambah transaksi baru' })
   async create(@Body() dto: CreateTransactionDto) {
     const data = await this.createUseCase.execute(dto);
-    return new DataResponse(HttpStatus.CREATED, 'Transaksi berhasil ditambahkan', data);
+    return new DataResponse(
+      HttpStatus.CREATED,
+      'Transaksi berhasil ditambahkan',
+      data,
+    );
   }
 
   @Get('customer/:customerId')

@@ -25,7 +25,10 @@ export class LoginUseCase {
     if (!credentials?.password)
       throw new UnauthorizedException('Email atau password salah');
 
-    const isValid = await PasswordHasher.verify(dto.password, credentials.password);
+    const isValid = await PasswordHasher.verify(
+      dto.password,
+      credentials.password,
+    );
     if (!isValid) throw new UnauthorizedException('Email atau password salah');
 
     const token = this.authService.generateJwtToken({

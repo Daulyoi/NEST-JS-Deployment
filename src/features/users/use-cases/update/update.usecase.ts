@@ -2,7 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Customer } from '../../../../domain/entity/customer.entity';
-import { ProfileResponse, UserMapper } from '../../../../libs/mapper/user-mapper';
+import {
+  ProfileResponse,
+  UserMapper,
+} from '../../../../libs/mapper/user-mapper';
 import { UpdateUserDto } from './update.dto';
 
 @Injectable()
@@ -17,7 +20,9 @@ export class UpdateUserUseCase {
     if (!customer) throw new NotFoundException('Customer tidak ditemukan');
     Object.assign(customer, {
       ...dto,
-      dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : customer.dateOfBirth,
+      dateOfBirth: dto.dateOfBirth
+        ? new Date(dto.dateOfBirth)
+        : customer.dateOfBirth,
     });
     const updated = await this.customerRepository.save(customer);
     return UserMapper.toProfileResponse(updated);

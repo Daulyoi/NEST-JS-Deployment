@@ -31,16 +31,33 @@ export class WeeklyReport {
   @Column({ name: 'persona', type: 'varchar', length: 50, nullable: false })
   persona!: string;
 
-  @Column({ name: 'wants_ratio', type: 'numeric', precision: 5, scale: 4, nullable: false })
+  @Column({
+    name: 'wants_ratio',
+    type: 'numeric',
+    precision: 5,
+    scale: 4,
+    nullable: false,
+  })
   wantsRatio!: number;
 
-  @Column({ name: 'needs_ratio', type: 'numeric', precision: 5, scale: 4, nullable: false })
+  @Column({
+    name: 'needs_ratio',
+    type: 'numeric',
+    precision: 5,
+    scale: 4,
+    nullable: false,
+  })
   needsRatio!: number;
 
   @Column({ name: 'total_expenses', type: 'bigint', nullable: false })
   totalExpenses!: number;
 
-  @Column({ name: 'anomaly_count', type: 'integer', default: 0, nullable: false })
+  @Column({
+    name: 'anomaly_count',
+    type: 'integer',
+    default: 0,
+    nullable: false,
+  })
   anomalyCount: number = 0;
 
   @Column({ name: 'report_text', type: 'text', nullable: false })

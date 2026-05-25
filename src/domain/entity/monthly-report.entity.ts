@@ -27,16 +27,39 @@ export class MonthlyReport {
   @Column({ name: 'persona', type: 'enum', enum: PersonaEnum, nullable: false })
   persona!: PersonaEnum;
 
-  @Column({ name: 'prev_persona', type: 'enum', enum: PersonaEnum, nullable: true })
+  @Column({
+    name: 'prev_persona',
+    type: 'enum',
+    enum: PersonaEnum,
+    nullable: true,
+  })
   prevPersona?: PersonaEnum;
 
-  @Column({ name: 'savings_rate', type: 'numeric', precision: 6, scale: 4, nullable: false })
+  @Column({
+    name: 'savings_rate',
+    type: 'numeric',
+    precision: 6,
+    scale: 4,
+    nullable: false,
+  })
   savingsRate!: number;
 
-  @Column({ name: 'wants_ratio', type: 'numeric', precision: 5, scale: 4, nullable: false })
+  @Column({
+    name: 'wants_ratio',
+    type: 'numeric',
+    precision: 5,
+    scale: 4,
+    nullable: false,
+  })
   wantsRatio!: number;
 
-  @Column({ name: 'needs_ratio', type: 'numeric', precision: 5, scale: 4, nullable: false })
+  @Column({
+    name: 'needs_ratio',
+    type: 'numeric',
+    precision: 5,
+    scale: 4,
+    nullable: false,
+  })
   needsRatio!: number;
 
   @Column({ name: 'wants_amount', type: 'bigint', nullable: false })
