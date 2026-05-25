@@ -1,41 +1,39 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { UsersModule } from './modules/users/users.module';
-import { TransactionsModule } from './modules/transactions/transactions.module';
-import { ChatSessionsModule } from './modules/chat-sessions/chat-sessions.module';
-import { ChatMessagesModule } from './modules/chat-messages/chat-messages.module';
+import appConfig from './infrastructure/config/app/app.config';
+import { AuthModule } from './auth/auth.module';
+import { UserAuthModule } from './features/user-auth/user-auth.module';
+import { UsersModule } from './features/users/users.module';
+import { TransactionsModule } from './features/transactions/transactions.module';
+import { ReportsModule } from './features/reports/reports.module';
+import { SchedulerModule } from './features/scheduler/scheduler.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      load: [appConfig],
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => {
-        const port = Number(configService.get<string>('DB_PORT', '5432'));
-
-        return {
-          type: 'postgres',
-          host: configService.get<string>('DB_HOST', 'localhost'),
-          port: Number.isNaN(port) ? 5432 : port,
-          username: configService.get<string>('DB_USERNAME', 'postgres'),
-          password: configService.get<string>('DB_PASSWORD', 'postgres'),
-          database: configService.get<string>('DB_DATABASE', 'finsight_db'),
-          autoLoadEntities: true,
-          synchronize: false,
-        };
-      },
+      useFactory: (config: ConfigService) => ({
+        type: 'postgres',
+        host: config.get<string>('DB_HOST', 'localhost'),
+        port: Number(config.get<string>('DB_PORT', '5432')),
+        username: config.get<string>('DB_USERNAME', 'postgres'),
+        password: config.get<string>('DB_PASSWORD', 'postgres'),
+        database: config.get<string>('DB_DATABASE', 'finsight_db'),
+        autoLoadEntities: true,
+        synchronize: false,
+      }),
     }),
+    AuthModule,
+    UserAuthModule,
     UsersModule,
     TransactionsModule,
-    ChatSessionsModule,
-    ChatMessagesModule,
+    ReportsModule,
+    SchedulerModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}
