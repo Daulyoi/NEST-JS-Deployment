@@ -60,7 +60,9 @@ export class DetectedAnomaly {
   @JoinColumn({ name: 'customer_id' })
   customer!: Customer;
 
-  @ManyToOne(() => WeeklyReport, (r) => r.anomalies, { onDelete: 'CASCADE' })
+  @ManyToOne(() => WeeklyReport, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'weekly_report_id' })
   weeklyReport!: WeeklyReport;
 }
