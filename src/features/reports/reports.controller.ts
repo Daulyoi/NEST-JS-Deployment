@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Get,
-  HttpStatus,
-  Param,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, HttpStatus, Param, Query } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -13,7 +7,12 @@ import {
 } from '@nestjs/swagger';
 import { RequireAuth } from '../../auth/decorators/auth.decorator';
 import { DataResponse } from '../../infrastructure/core/http/http-response';
-import { GetMonthlyReportsUseCase, GetWeeklyReportsUseCase } from './use-cases';
+import {
+  GetMonthlyReportDetailUseCase,
+  GetMonthlyReportsUseCase,
+  GetWeeklyReportDetailUseCase,
+  GetWeeklyReportsUseCase,
+} from './use-cases';
 
 @ApiTags('Reports')
 @ApiBearerAuth()
@@ -22,11 +21,13 @@ import { GetMonthlyReportsUseCase, GetWeeklyReportsUseCase } from './use-cases';
 export class ReportsController {
   constructor(
     private readonly getWeeklyUseCase: GetWeeklyReportsUseCase,
+    private readonly getWeeklyDetailUseCase: GetWeeklyReportDetailUseCase,
     private readonly getMonthlyUseCase: GetMonthlyReportsUseCase,
+    private readonly getMonthlyDetailUseCase: GetMonthlyReportDetailUseCase,
   ) {}
 
   @Get('weekly/:customerId')
-  @ApiOperation({ summary: 'Ambil laporan mingguan customer' })
+  @ApiOperation({ summary: 'List laporan mingguan customer' })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   async getWeekly(
     @Param('customerId') customerId: string,
@@ -40,8 +41,25 @@ export class ReportsController {
     );
   }
 
+  @Get('weekly/:customerId/:reportId')
+  @ApiOperation({ summary: 'Detail laporan mingguan beserta anomali' })
+  async getWeeklyDetail(
+    @Param('customerId') customerId: string,
+    @Param('reportId') reportId: string,
+  ) {
+    const data = await this.getWeeklyDetailUseCase.execute(
+      customerId,
+      reportId,
+    );
+    return new DataResponse(
+      HttpStatus.OK,
+      'Detail laporan mingguan berhasil diambil',
+      data,
+    );
+  }
+
   @Get('monthly/:customerId')
-  @ApiOperation({ summary: 'Ambil laporan bulanan customer' })
+  @ApiOperation({ summary: 'List laporan bulanan customer' })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   async getMonthly(
     @Param('customerId') customerId: string,
@@ -51,6 +69,23 @@ export class ReportsController {
     return new DataResponse(
       HttpStatus.OK,
       'Laporan bulanan berhasil diambil',
+      data,
+    );
+  }
+
+  @Get('monthly/:customerId/:reportId')
+  @ApiOperation({ summary: 'Detail laporan bulanan' })
+  async getMonthlyDetail(
+    @Param('customerId') customerId: string,
+    @Param('reportId') reportId: string,
+  ) {
+    const data = await this.getMonthlyDetailUseCase.execute(
+      customerId,
+      reportId,
+    );
+    return new DataResponse(
+      HttpStatus.OK,
+      'Detail laporan bulanan berhasil diambil',
       data,
     );
   }
