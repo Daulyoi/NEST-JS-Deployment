@@ -18,11 +18,15 @@ export class GetWeeklyReportDetailUseCase {
     private readonly anomalyRepository: Repository<DetectedAnomaly>,
   ) {}
 
-  async execute(customerId: string, reportId: string): Promise<WeeklyReportDetail> {
+  async execute(
+    customerId: string,
+    reportId: string,
+  ): Promise<WeeklyReportDetail> {
     const report = await this.reportRepository.findOne({
       where: { id: reportId, customerId },
     });
-    if (!report) throw new NotFoundException('Laporan mingguan tidak ditemukan');
+    if (!report)
+      throw new NotFoundException('Laporan mingguan tidak ditemukan');
 
     const anomalies = await this.anomalyRepository.find({
       where: { weeklyReportId: reportId },
