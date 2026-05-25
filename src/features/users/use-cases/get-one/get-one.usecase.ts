@@ -1,0 +1,19 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Customer } from '../../../../domain/entity/customer.entity';
+import { ProfileResponse, UserMapper } from '../../../../libs/mapper/user-mapper';
+
+@Injectable()
+export class GetOneUserUseCase {
+  constructor(
+    @InjectRepository(Customer)
+    private readonly customerRepository: Repository<Customer>,
+  ) {}
+
+  async execute(id: string): Promise<ProfileResponse> {
+    const customer = await this.customerRepository.findOne({ where: { id } });
+    if (!customer) throw new NotFoundException('Customer tidak ditemukan');
+    return UserMapper.toProfileResponse(customer);
+  }
+}
