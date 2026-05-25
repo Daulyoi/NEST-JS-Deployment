@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import type { StringValue } from 'ms';
@@ -7,6 +7,7 @@ import { UserCredentials } from '../domain/entity/user-credentials.entity';
 import { AuthService } from './auth.service';
 import { AuthGuard } from './guards/auth.guard';
 
+@Global()
 @Module({
   imports: [
     TypeOrmModule.forFeature([UserCredentials]),

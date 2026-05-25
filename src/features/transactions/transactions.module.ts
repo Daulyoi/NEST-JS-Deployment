@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthModule } from '../../auth/auth.module';
 import { Account } from '../../domain/entity/account.entity';
 import { Transaction } from '../../domain/entity/transaction.entity';
 import { TransactionsController } from './transactions.controller';
@@ -10,7 +9,7 @@ import {
 } from './use-cases';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Transaction, Account]), AuthModule],
+  imports: [TypeOrmModule.forFeature([Transaction, Account])],
   controllers: [TransactionsController],
   providers: [CreateTransactionUseCase, GetTransactionsByUserUseCase],
 })
