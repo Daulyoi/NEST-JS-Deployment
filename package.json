@@ -21,7 +21,11 @@
     "migration:generate": "npm run build && typeorm migration:generate src/database/migrations/InitSchema -d dist/database/data-source.js",
     "migration:run": "npm run build && typeorm migration:run -d dist/database/data-source.js",
     "migration:revert": "npm run build && typeorm migration:revert -d dist/database/data-source.js",
-    "seed": "ts-node --project tsconfig.seed.json src/database/seeds/seed.ts"
+    "seed": "ts-node --project tsconfig.seed.json src/database/seeds/seed.ts",
+    
+    "schema:drop": "npm run build && typeorm schema:drop -d dist/database/data-source.js",
+    "migrate:fresh": "npm run schema:drop && npm run migration:run",
+    "migrate:fresh:seed": "npm run migrate:fresh && npm run seed"
   },
   "dependencies": {
     "@nestjs/axios": "^4.0.0",
