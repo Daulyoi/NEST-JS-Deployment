@@ -3,14 +3,12 @@ import {
   Column,
   PrimaryGeneratedColumn,
   ManyToOne,
-  OneToMany,
   JoinColumn,
   CreateDateColumn,
   Index,
   Unique,
 } from 'typeorm';
 import { Customer } from './customer.entity';
-import { DetectedAnomaly } from './detected-anomaly.entity';
 
 @Entity('weekly_reports')
 @Unique('uq_weekly_customer_date', ['customerId', 'reportDate'])
@@ -71,7 +69,4 @@ export class WeeklyReport {
   })
   @JoinColumn({ name: 'customer_id' })
   customer!: Customer;
-
-  @OneToMany(() => DetectedAnomaly, (a) => a.weeklyReport)
-  anomalies!: DetectedAnomaly[];
 }
