@@ -1,133 +1,167 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# FinSight
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+FinSight adalah purwarupa Asisten Keuangan Pintar terintegrasi untuk ekosistem Bank DBS. Sistem ini bekerja secara end-to-end melalui tiga pilar: Zero-Click Tracking (pelabelan otomatis) , Smart Profiling (pemetaan persona nasabah melalui clustering) , dan Proactive AI Coach. Inovasi utama sistem ini terletak pada penggunaan arsitektur Deep Learning sebagai pendeteksi anomali (anomaly detection) aliran kas. Ketika jaringan saraf tiruan mendeteksi pembelanjaan yang tidak wajar, data anomali tersebut langsung menjadi trigger terotomasi yang memanggil Generative AI untuk meracik teguran, pujian, atau saran dengan gaya komunikasi spesifik sesuai persona finansial nasabah.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## ⚙️ Model Domain & Core Engine Layer
 
-## Description
+Repository ini berisi Backend dari **[FinSight]**. Backend FinSight dibuat menggunakan **Node.js**, **NestJS Framework**, **TypeScript**, dan **PostgreSQL (melalui TypeORM)**, backend ini menerapkan arsitektur modular yang dirancang untuk menerjemahkan logika ledger yang rumit menjadi API yang andal dan ramah bagi aplikasi client.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## 🗺️ Ikhtisar Sistem & Domain Bisnis
 
-```bash
-$ npm install
+Backend **[FinSight]** bertindak sebagai satu-satunya sumber kebenaran (*single source of truth*) untuk seluruh catatan dana nasabah dan riwayat profil perilaku keuangan. Sistem ini memproses transaksi secara real-time, menghitung rasio *Needs vs. Wants* secara langsung, menerjemahkan deskripsi transaksi menjadi label kategori pengeluaran, serta menganalisis tingkat risiko anomali transaksi.
+
+---
+
+## 🔄 Model Domain Bisnis & Alur Kerja Utama
+
+Sistem mengoordinasikan transaksi dan analitik melalui alur kerja tertutup antara **NestJS Core Engine**, **PostgreSQL Database**, dan **FastAPI Machine Learning Service**.
+
+```text
+  [Aplikasi Seluler Client]
+          │
+          ▼  1. Eksekusi Transaksi (POST /transactions)
+  ┌────────────────────────────────────────────────────────┐
+  │                 [NestJS API Gateway]                   │
+  │                                                        │
+  │  2. Simpan Transaksi & Mutasi Saldo Buku Besar         │
+  │     (Tulis ke PostgreSQL db: tabel transaksi & rekening)───► [PostgreSQL]
+  │                                                        │
+  │  3. Klasifikasi Kategori & Analisis Fraud               │
+  │     (HTTP Post ke FastAPI ML Endpoint)                 │
+  └───────────────────┬────────────────────────────────────┘
+                      │
+                      ▼  4. Klasifikasi & Analisis Risiko
+  ┌────────────────────────────────────────────────────────┐
+  │               [FastAPI Machine Learning]               │
+  │                                                        │
+  │  * Kategorisasi otomatis teks mutasi (Wants/Needs)     │
+  │  * Skor risiko anomali untuk pendeteksian fraud        │
+  └───────────────────┬────────────────────────────────────┘
+                      │
+                      ▼  5. Label Kategori & Status Anomali
+  ┌────────────────────────────────────────────────────────┐
+  │                 [NestJS API Gateway]                   │
+  │                                                        │
+  │  6. Kalkulasi Ulang Rasio Pengeluaran Nasabah          │
+  │  7. Simpan statistik terbaru ke db (tabel nasabah)     ───► [PostgreSQL]
+  │  8. (Opsional) Kirim notifikasi alarm anomali          ───► [Perangkat Client]
+  └────────────────────────────────────────────────────────┘
 ```
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ npm run start
+## 🔌 Integrasi Komersial Pihak Ketiga
 
-# watch mode
-$ npm run start:dev
+Untuk mendukung kelancaran operasional keuangan, pengiriman notifikasi, dan pengelolaan dokumen, core engine ini terintegrasi dengan layanan eksternal berikut:
 
-# production mode
-$ npm run start:prod
-```
+| Penyedia Layanan | Cakupan Fungsi | Tujuan Bisnis |
+| :--- | :--- | :--- |
+| **Payment Gateway** <br>*(misal: Stripe / Xendit)* | Rekonsiliasi Dana | Menangani pengisian saldo (*deposit*), penarikan dana (*payout*), dan pencatatan mutasi penyelesaian transaksi secara real-time. |
+| **Notification Gateway** <br>*(misal: Twilio / FCM)* | Keamanan Identitas | Mengirimkan kode OTP SMS secara instan, verifikasi keamanan login, dan siaran darurat notifikasi anomali transaksi. |
+| **Secure Object Storage** <br>*(misal: AWS S3)* | Arsip Dokumen | Menyimpan file laporan kesehatan keuangan mingguan dan bulanan nasabah (dalam format PDF/JSON) secara aman dan terenkripsi. |
+| **Transactional Email** <br>*(misal: SendGrid)* | Hubungan Nasabah | Mengirimkan bukti transfer, tagihan bulanan, serta ringkasan dokumen analitik keuangan langsung ke surel nasabah. |
 
-## Run with Docker
+---
 
-1. Create a local `.env` file in the project root.
+## 🛡️ Tata Kelola Data & Kepatuhan (Compliance)
 
-```env
-DB_PASSWORD=your_postgres_password
-DS_SERVICE_URL=http://host.docker.internal:8000
-AI_SERVICE_URL=http://host.docker.internal:9000
-```
+Menangani sektor keuangan pribadi menuntut standar keamanan data yang tinggi. Sistem backend ini mengimplementasikan prinsip kepatuhan berikut:
 
-2. Build and start containers.
+1. **Enkripsi Data Sensitif (PII Protection)**:
+   * Password pengguna dienkripsi menggunakan algoritma **BCrypt** sebelum disimpan di database.
+   * Verifikasi keamanan sekunder diterapkan pada field sensitif seperti *nama_ibu_kandung* untuk menghindari pencurian identitas.
+2. **Rotasi Sesi JWT & Refresh Token**:
+   * Menerapkan rotasi token sesi ganda (Access & Refresh token) yang aman.
+   * Masa berlaku token dibatasi (contoh: `7d`) untuk meminimalkan risiko pembajakan akun.
+3. **Immutable Ledger Design**:
+   * Data mutasi pada tabel `transaksi` bersifat hanya bisa ditambah (*append-only*). Data transaksi yang sudah tercatat tidak dapat diubah (*update*) atau dihapus (*delete*).
+   * Perubahan saldo rekening selalu disandingkan dengan log mutasi debet/kredit yang jelas untuk menjamin auditabilitas ledger keuangan.
 
-```bash
-docker compose up --build -d
-```
+---
 
-3. Check service health.
+## 📊 Kapabilitas API Utama
 
-```bash
-docker compose ps
-curl http://localhost:3000/health
-```
+Setiap modul API dikelompokkan berdasarkan kapabilitas bisnis yang disediakannya untuk pengguna:
 
-4. Stop containers.
+### 1. Identity & Access Management (IAM)
+*   **Endpoint**: `/auth/register`, `/auth/login`, `/auth/refresh`, `/users/me`
+*   **Nilai Bisnis**: Menangani pendaftaran nasabah baru, otentikasi login, hashing password, dan pelacakan segmen demografis serta gaji bulanan (`gaji_bulanan`).
 
-```bash
-docker compose down
-```
+### 2. Rekening & Buku Besar Saldo (Ledger Registry)
+*   **Endpoint**: `/accounts`
+*   **Nilai Bisnis**: Mengelola detail akun tabungan nasabah (`rekening`), mencatat saldo saat ini (`saldo`), dan status operasional akun (Aktif, Tangguh).
 
-If you also want to remove database data:
+### 3. Pemrosesan & Klasifikasi Transaksi
+*   **Endpoint**: `/transactions`, `/transactions/transfer`
+*   **Nilai Bisnis**: Memproses transfer dana antar rekening nasabah. Melakukan pemetaan Merchant Category Code (MCC) secara otomatis dan mengarahkan teks transaksi ke ML NLP FastAPI jika data kode merchant tidak tersedia.
 
-```bash
-docker compose down -v
-```
+### 4. Scheduler & Laporan Keuangan Berbasis AI
+*   **Endpoint**: `/reports/insights`
+*   **Nilai Bisnis**: Mengelola pemicu otomatis (*cron jobs*) yang berjalan berkala:
+    *   **Tugas 7 Harian (Mingguan)**: Mengumpulkan data transaksi 7 hari terakhir, meminta skor anomali ke FastAPI, membuat file PDF laporan mingguan, dan mengirim notifikasi ringkasan.
+    *   **Tugas 30 Harian (Bulanan)**: Menjalankan algoritma pengelompokan perilaku nasabah (*clustering*), memperbarui persona demografis, dan menyusun laporan bulanan berbasis LLM.
+    *   **Monthly Reset Job**: Mengosongkan akumulator pengeluaran Needs/Wants menjadi nol setiap tanggal 1 pukul 00:00.
 
-## Run tests
+---
 
-```bash
-# unit tests
-$ npm run test
+## 📈 Keandalan Sistem & Pemantauan
 
-# e2e tests
-$ npm run test:e2e
+Untuk menjaga target waktu aktif (*uptime*) sistem sebesar `99.9%`:
 
-# test coverage
-$ npm run test:cov
-```
+*   **Observability Stack**: Integrasi dengan **Sentry** dan **Datadog** untuk pelacakan error serta analisis latensi query database TypeORM secara real-time.
+*   **Scheduler Health Monitor**: Stakeholder produk dapat mengakses endpoint `/scheduler/status` untuk memantau status eksekusi terakhir, jadwal eksekusi berikutnya, dan kesehatan cron jobs mingguan/bulanan.
+*   **HTTP Resilience & Fallback**: Integrasi API eksternal menuju FastAPI dibungkus dengan konfigurasi retry otomatis, batas waktu tunggu (*timeout*) 3 detik, dan sistem *fallback* nilai default guna mencegah backend hang saat layanan AI mengalami kendala.
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## 🚀 Panduan Cepat untuk Tim Produk & QA
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Panduan ini memudahkan tim non-teknis dalam menjalankan backend secara lokal untuk melakukan pengujian fungsionalitas atau melihat dokumentasi API interaktif.
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+### Langkah Memulai (Setup Lokal)
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+1. **Klon Repositori dan Pasang Dependensi**:
+   ```bash
+   git clone [BACKEND_REPO_URL]
+   cd NEST-JS
+   npm install
+   ```
 
-## Resources
+2. **Konfigurasi Variabel Lingkungan Lokal**:
+   Salin file konfigurasi awal:
+   ```bash
+   cp .env.example .env
+   ```
+   Buka file `.env` dan masukkan konfigurasi database PostgreSQL lokal Anda:
+   ```env
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_USERNAME=postgres
+   DB_PASSWORD=[PASSWORD_POSTGRES_ANDA]
+   DB_DATABASE=finsight_db
+   JWT_SECRET=[KODE_RAHASIA_JWT_ANDA]
+   ```
 
-Check out a few resources that may come in handy when working with NestJS:
+3. **Inisialisasi Skema & Data Uji**:
+   Jalankan migrasi skema tabel dan masukkan data nasabah buatan untuk pengujian:
+   ```bash
+   # Buat skema tabel di PostgreSQL
+   npm run migration:run
+   
+   # Suntikkan data awal (nasabah, rekening, riwayat transaksi dummy)
+   npm run seed
+   ```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+4. **Jalankan Server Lokal**:
+   ```bash
+   npm run start:dev
+   ```
 
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+5. **Akses Dashboard API Swagger (OpenAPI UI)**:
+   Buka browser Anda dan akses alamat:
+   ```text
+   http://localhost:3000/api/docs
+   ```
+   Melalui halaman ini, Product Manager dan QA Engineer dapat mencoba memicu panggilan API secara langsung (seperti login nasabah, melihat saldo, atau mencoba alur transfer dana).
