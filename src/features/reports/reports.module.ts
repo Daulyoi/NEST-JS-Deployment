@@ -11,9 +11,12 @@ import {
   GetWeeklyReportsUseCase,
 } from './use-cases';
 
+import { SchedulerModule } from '../scheduler/scheduler.module';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([WeeklyReport, MonthlyReport, DetectedAnomaly]),
+    SchedulerModule,
   ],
   controllers: [ReportsController],
   providers: [

@@ -1,4 +1,4 @@
-import { Controller, Get, HttpStatus, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, HttpStatus, Param, Query } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -14,6 +14,8 @@ import {
   GetWeeklyReportsUseCase,
 } from './use-cases';
 
+import { SchedulerService } from '../scheduler/scheduler.service';
+
 @ApiTags('Reports')
 @ApiBearerAuth()
 @RequireAuth()
@@ -24,6 +26,7 @@ export class ReportsController {
     private readonly getWeeklyDetailUseCase: GetWeeklyReportDetailUseCase,
     private readonly getMonthlyUseCase: GetMonthlyReportsUseCase,
     private readonly getMonthlyDetailUseCase: GetMonthlyReportDetailUseCase,
+    private readonly schedulerService: SchedulerService,
   ) {}
 
   @Get('weekly/:customerId')
@@ -86,6 +89,28 @@ export class ReportsController {
     return new DataResponse(
       HttpStatus.OK,
       'Detail laporan bulanan berhasil diambil',
+      data,
+    );
+  }
+
+  @Post('trigger-weekly/:customerId')
+  @ApiOperation({ summary: 'Trigger laporan mingguan untuk customer secara manual' })
+  async triggerWeekly(@Param('customerId') customerId: string) {
+    const data = await this.schedulerService.triggerWeeklyReportForCustomer(customerId);
+    return new DataResponse(
+      HttpStatus.OK,
+      'Trigger laporan mingguan berhasil dikirim',
+      data,
+    );
+  }
+
+  @Post('trigger-monthly/:customerId')
+  @ApiOperation({ summary: 'Trigger laporan bulanan untuk customer secara manual' })
+  async triggerMonthly(@Param('customerId') customerId: string) {
+    const data = await this.schedulerService.triggerMonthlyReportForCustomer(customerId);
+    return new DataResponse(
+      HttpStatus.OK,
+      'Trigger laporan bulanan berhasil dikirim',
       data,
     );
   }

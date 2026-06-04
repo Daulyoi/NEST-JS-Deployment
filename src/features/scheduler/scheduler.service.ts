@@ -76,6 +76,42 @@ export class SchedulerService {
     }
   }
 
+  async triggerWeeklyReportForCustomer(customerId: string): Promise<any> {
+    this.logger.log(`Triggering weekly scheduler for customer ${customerId}...`);
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post<{ job_id: string }>(
+          `${this.fastapiUrl}/scheduler/weekly`,
+          { customer_ids: [customerId], dry_run: false },
+          { headers: this.schedulerHeaders, timeout: 10_000 },
+        ),
+      );
+      this.logger.log(`Weekly job queued for ${customerId}: ${response.data.job_id}`);
+      return { success: true, jobId: response.data.job_id };
+    } catch (err: unknown) {
+      this.logger.error(`Weekly trigger failed for ${customerId}: ${(err as Error).message}`);
+      throw err;
+    }
+  }
+
+  async triggerMonthlyReportForCustomer(customerId: string): Promise<any> {
+    this.logger.log(`Triggering monthly scheduler for customer ${customerId}...`);
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post<{ job_id: string }>(
+          `${this.fastapiUrl}/scheduler/monthly`,
+          { customer_ids: [customerId], dry_run: false },
+          { headers: this.schedulerHeaders, timeout: 10_000 },
+        ),
+      );
+      this.logger.log(`Monthly job queued for ${customerId}: ${response.data.job_id}`);
+      return { success: true, jobId: response.data.job_id };
+    } catch (err: unknown) {
+      this.logger.error(`Monthly trigger failed for ${customerId}: ${(err as Error).message}`);
+      throw err;
+    }
+  }
+
   // Reset wants/needs ratio at WIB midnight on 1st (UTC 17:00 last day)
   @Cron('0 17 28-31 * *')
   async resetMonthlyRatios(): Promise<void> {
