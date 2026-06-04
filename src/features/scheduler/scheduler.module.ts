@@ -12,5 +12,6 @@ import { SchedulerService } from './scheduler.service';
     TypeOrmModule.forFeature([Customer]),
   ],
   providers: [SchedulerService],
+  exports: [SchedulerService],
 })
 export class SchedulerModule {}

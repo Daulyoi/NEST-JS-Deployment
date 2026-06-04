@@ -6,11 +6,12 @@ import { TransactionsController } from './transactions.controller';
 import {
   CreateTransactionUseCase,
   GetTransactionsByUserUseCase,
+  GetTransactionDetailUseCase,
 } from './use-cases';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Transaction, Account])],
   controllers: [TransactionsController],
-  providers: [CreateTransactionUseCase, GetTransactionsByUserUseCase],
+  providers: [CreateTransactionUseCase, GetTransactionsByUserUseCase, GetTransactionDetailUseCase],
 })
 export class TransactionsModule {}

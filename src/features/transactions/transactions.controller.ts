@@ -18,6 +18,7 @@ import { DataResponse } from '../../infrastructure/core/http/http-response';
 import {
   CreateTransactionUseCase,
   GetTransactionsByUserUseCase,
+  GetTransactionDetailUseCase,
 } from './use-cases';
 import { CreateTransactionDto } from './use-cases/create/create.dto';
 
@@ -29,6 +30,7 @@ export class TransactionsController {
   constructor(
     private readonly createUseCase: CreateTransactionUseCase,
     private readonly getByUserUseCase: GetTransactionsByUserUseCase,
+    private readonly getDetailUseCase: GetTransactionDetailUseCase,
   ) {}
 
   @Post()
@@ -51,5 +53,12 @@ export class TransactionsController {
   ) {
     const data = await this.getByUserUseCase.execute(customerId, limit ?? 50);
     return new DataResponse(HttpStatus.OK, 'Transaksi berhasil diambil', data);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Ambil detail transaksi berdasarkan ID' })
+  async getById(@Param('id') id: string) {
+    const data = await this.getDetailUseCase.execute(id);
+    return new DataResponse(HttpStatus.OK, 'Detail transaksi berhasil diambil', data);
   }
 }
