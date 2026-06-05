@@ -59,6 +59,53 @@ function buildTxs(
   return { built, finalBalance: balance };
 }
 
+// ── Date remap ───────────────────────────────────────────────────────────────
+// Padatkan seluruh timeline transaksi (asli Apr–Mei 2025) ke jendela demo
+// 2026-05-06 s/d 2026-06-05. Spasi antar-hari diskalakan proporsional dan
+// jam transaksi dipertahankan agar tetap realistis.
+const REMAP_TARGET_START = Date.UTC(2026, 4, 6); // 6 Mei 2026
+const REMAP_TARGET_DAYS = 30; // → 5 Juni 2026
+const DAY_MS = 86_400_000;
+const DATE_RE = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\+07:00$/;
+const pad2 = (n: number) => String(n).padStart(2, '0');
+
+// Batas timeline asli (dihitung dari data transaksi) — dipakai bersama oleh
+// transaksi & laporan agar tetap selaras di jendela demo yang sama.
+let remapMinDay = 0;
+let remapOriginalDays = 1;
+
+function initRemapBounds(groups: RawTx[][]): void {
+  const days = groups.flat().map((r) => {
+    const m = DATE_RE.exec(r.date);
+    if (!m) throw new Error(`Format tanggal tak terduga: ${r.date}`);
+    return Date.UTC(+m[1], +m[2] - 1, +m[3]);
+  });
+  remapMinDay = Math.min(...days);
+  remapOriginalDays = Math.round((Math.max(...days) - remapMinDay) / DAY_MS) || 1;
+}
+
+function mapDayUtc(dayUtc: number): Date {
+  const origIndex = Math.round((dayUtc - remapMinDay) / DAY_MS);
+  const newIndex = Math.round((origIndex / remapOriginalDays) * REMAP_TARGET_DAYS);
+  return new Date(REMAP_TARGET_START + newIndex * DAY_MS);
+}
+
+function remapTransactionDates(groups: RawTx[][]): void {
+  for (const r of groups.flat()) {
+    const m = DATE_RE.exec(r.date)!;
+    const nd = mapDayUtc(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+    r.date = `${nd.getUTCFullYear()}-${pad2(nd.getUTCMonth() + 1)}-${pad2(
+      nd.getUTCDate(),
+    )}T${m[4]}:${m[5]}:${m[6]}+07:00`;
+  }
+}
+
+// Remap tanggal 'YYYY-MM-DD' (laporan) ke jendela demo memakai timeline yang sama.
+function remapDateOnly(str: string): Date {
+  const [y, mo, d] = str.split('-').map(Number);
+  return mapDayUtc(Date.UTC(y, mo - 1, d));
+}
+
 // ── Budi Santoso — Tightwad, gaji 6.5jt ─────────────────────────────────────
 const BUDI_START = 3_500_000;
 const BUDI_TXS: RawTx[] = [
@@ -1220,6 +1267,9 @@ async function main() {
 
     // ── 4. Transactions ───────────────────────────────────────────────────────
     console.log('Seeding transactions...');
+    // Padatkan tanggal transaksi ke jendela demo 6 Mei – 5 Juni 2026.
+    initRemapBounds([BUDI_TXS, SARI_TXS, RIAN_TXS]);
+    remapTransactionDates([BUDI_TXS, SARI_TXS, RIAN_TXS]);
     const { built: budiBuilt, finalBalance: budiFinal } = buildTxs(
       budi.id,
       budiAcc.id,
@@ -1258,14 +1308,17 @@ async function main() {
       `Rian: ${rianTxs.length} tx, balance Rp${rianFinal.toLocaleString()}`,
     );
 
-    // ── 5. Weekly Reports (April 4 minggu) ───────────────────────────────────
+    // ── 5. Weekly Reports (4 minggu, diremap ke jendela demo) ─────────────────
     console.log('Seeding weekly reports...');
     const weeks = [
       { reportDate: '2025-04-06', periodStart: '2025-04-01' },
       { reportDate: '2025-04-13', periodStart: '2025-04-07' },
       { reportDate: '2025-04-20', periodStart: '2025-04-14' },
       { reportDate: '2025-04-27', periodStart: '2025-04-21' },
-    ];
+    ].map((w: { reportDate: string; periodStart: string }) => ({
+      reportDate: remapDateOnly(w.reportDate),
+      periodStart: remapDateOnly(w.periodStart),
+    }));
 
     // Budi weekly stats (pre-computed)
     const budiWeekly = [
@@ -1275,7 +1328,7 @@ async function main() {
         totalExpenses: 2_285_000,
         anomalyCount: 0,
         reportText:
-          'Minggu pertama April 2025: Total pengeluaran Rp2.285.000, seluruhnya kebutuhan pokok. Pengeluaran terbesar sewa kos (Rp1.500.000) dan listrik (Rp248.000). Tabungan minggu ini Rp1.500.000. Pola pengeluaran sangat terkontrol sesuai profil Tightwad.',
+          'Minggu pertama Mei 2026: Total pengeluaran Rp2.285.000, seluruhnya kebutuhan pokok. Pengeluaran terbesar sewa kos (Rp1.500.000) dan listrik (Rp248.000). Tabungan minggu ini Rp1.500.000. Pola pengeluaran sangat terkontrol sesuai profil Tightwad.',
       },
       {
         wantsRatio: 0.0,
@@ -1283,7 +1336,7 @@ async function main() {
         totalExpenses: 342_000,
         anomalyCount: 0,
         reportText:
-          'Minggu kedua April 2025: Total pengeluaran Rp342.000, jauh lebih rendah karena tidak ada tagihan bulanan. Pengeluaran hanya untuk makan siang harian dan transport. Konsistensi kebutuhan 100% — nol pengeluaran keinginan.',
+          'Minggu kedua Mei 2026: Total pengeluaran Rp342.000, jauh lebih rendah karena tidak ada tagihan bulanan. Pengeluaran hanya untuk makan siang harian dan transport. Konsistensi kebutuhan 100% — nol pengeluaran keinginan.',
       },
       {
         wantsRatio: 0.286,
@@ -1291,7 +1344,7 @@ async function main() {
         totalExpenses: 437_000,
         anomalyCount: 1,
         reportText:
-          'Minggu ketiga April 2025: Total pengeluaran Rp437.000. Terdapat 1 anomali — pengeluaran kafe Rp125.000 di Janji Jiwa, 8x lebih tinggi dari rata-rata kafe Anda (biasanya Rp0). Pengeluaran keinginan minggu ini mencapai 28,6% dari total.',
+          'Minggu ketiga Mei 2026: Total pengeluaran Rp437.000. Terdapat 1 anomali — pengeluaran kafe Rp125.000 di Janji Jiwa, 8x lebih tinggi dari rata-rata kafe Anda (biasanya Rp0). Pengeluaran keinginan minggu ini mencapai 28,6% dari total.',
       },
       {
         wantsRatio: 0.0,
@@ -1299,7 +1352,7 @@ async function main() {
         totalExpenses: 294_000,
         anomalyCount: 0,
         reportText:
-          'Minggu keempat April 2025: Total pengeluaran Rp294.000, kembali ke pola normal. Seluruh pengeluaran kebutuhan pokok — makan siang dan belanja dapur. Profil Tightwad kembali konsisten.',
+          'Minggu keempat Mei 2026: Total pengeluaran Rp294.000, kembali ke pola normal. Seluruh pengeluaran kebutuhan pokok — makan siang dan belanja dapur. Profil Tightwad kembali konsisten.',
       },
     ];
 
@@ -1311,7 +1364,7 @@ async function main() {
         totalExpenses: 3_777_000,
         anomalyCount: 0,
         reportText:
-          'Minggu pertama April 2025: Total pengeluaran Rp3.777.000. Pengeluaran didominasi kebutuhan pokok (97,9%) termasuk sewa apartemen dan tagihan rutin. Pengeluaran keinginan Rp78.000 untuk kafe — wajar. Tabungan rutin Rp2.000.000 berhasil dilakukan.',
+          'Minggu pertama Mei 2026: Total pengeluaran Rp3.777.000. Pengeluaran didominasi kebutuhan pokok (97,9%) termasuk sewa apartemen dan tagihan rutin. Pengeluaran keinginan Rp78.000 untuk kafe — wajar. Tabungan rutin Rp2.000.000 berhasil dilakukan.',
       },
       {
         wantsRatio: 0.3144,
@@ -1319,7 +1372,7 @@ async function main() {
         totalExpenses: 808_000,
         anomalyCount: 0,
         reportText:
-          'Minggu kedua April 2025: Total pengeluaran Rp808.000 dengan rasio keinginan 31,4%. Pengeluaran seimbang antara kebutuhan dan keinginan — sesuai profil Unconflicted. Termasuk langganan Netflix, makan malam restoran, dan dua kunjungan kafe.',
+          'Minggu kedua Mei 2026: Total pengeluaran Rp808.000 dengan rasio keinginan 31,4%. Pengeluaran seimbang antara kebutuhan dan keinginan — sesuai profil Unconflicted. Termasuk langganan Netflix, makan malam restoran, dan dua kunjungan kafe.',
       },
       {
         wantsRatio: 0.7809,
@@ -1327,7 +1380,7 @@ async function main() {
         totalExpenses: 2_478_000,
         anomalyCount: 1,
         reportText:
-          'Minggu ketiga April 2025: Total pengeluaran Rp2.478.000. Terdapat 1 anomali — pembelian Shopee Rp1.850.000 untuk skincare & homeware, 4,6x lebih tinggi dari rata-rata belanja online bulanan Anda (Rp400.000). Rasio keinginan melonjak ke 78,1%.',
+          'Minggu ketiga Mei 2026: Total pengeluaran Rp2.478.000. Terdapat 1 anomali — pembelian Shopee Rp1.850.000 untuk skincare & homeware, 4,6x lebih tinggi dari rata-rata belanja online bulanan Anda (Rp400.000). Rasio keinginan melonjak ke 78,1%.',
       },
       {
         wantsRatio: 0.309,
@@ -1335,7 +1388,7 @@ async function main() {
         totalExpenses: 796_000,
         anomalyCount: 0,
         reportText:
-          'Minggu keempat April 2025: Total pengeluaran Rp796.000, kembali ke pola normal. Rasio keinginan 30,9% mencerminkan keseimbangan khas profil Unconflicted. Termasuk makan malam restoran, Spotify, dan kunjungan kafe.',
+          'Minggu keempat Mei 2026: Total pengeluaran Rp796.000, kembali ke pola normal. Rasio keinginan 30,9% mencerminkan keseimbangan khas profil Unconflicted. Termasuk makan malam restoran, Spotify, dan kunjungan kafe.',
       },
     ];
 
@@ -1347,7 +1400,7 @@ async function main() {
         totalExpenses: 6_897_000,
         anomalyCount: 0,
         reportText:
-          'Minggu pertama April 2025: Total pengeluaran Rp6.897.000. Meskipun pengeluaran besar, kebutuhan masih mendominasi (68%) karena sewa apartemen Rp3.500.000. Pengeluaran keinginan Rp2.205.000 termasuk konser, belanja online, dan fine dining.',
+          'Minggu pertama Mei 2026: Total pengeluaran Rp6.897.000. Meskipun pengeluaran besar, kebutuhan masih mendominasi (68%) karena sewa apartemen Rp3.500.000. Pengeluaran keinginan Rp2.205.000 termasuk konser, belanja online, dan fine dining.',
       },
       {
         wantsRatio: 0.8671,
@@ -1355,7 +1408,7 @@ async function main() {
         totalExpenses: 5_172_000,
         anomalyCount: 1,
         reportText:
-          'Minggu kedua April 2025: Total pengeluaran Rp5.172.000 dengan rasio keinginan 86,7%. Terdapat 1 anomali — pengeluaran hiburan Rp3.500.000 di OTA Club (VIP table), 2,9x lebih tinggi dari rata-rata pengeluaran hiburan Anda. Pola pengeluaran sangat tinggi.',
+          'Minggu kedua Mei 2026: Total pengeluaran Rp5.172.000 dengan rasio keinginan 86,7%. Terdapat 1 anomali — pengeluaran hiburan Rp3.500.000 di OTA Club (VIP table), 2,9x lebih tinggi dari rata-rata pengeluaran hiburan Anda. Pola pengeluaran sangat tinggi.',
       },
       {
         wantsRatio: 0.6511,
@@ -1363,7 +1416,7 @@ async function main() {
         totalExpenses: 2_964_000,
         anomalyCount: 0,
         reportText:
-          'Minggu ketiga April 2025: Total pengeluaran Rp2.964.000 dengan rasio keinginan 65,1%. Pengeluaran termasuk earbuds Lazada (Rp1.250.000), makan malam Sushi Tei, dan top-up game. Pola konsisten dengan profil Spendthrift.',
+          'Minggu ketiga Mei 2026: Total pengeluaran Rp2.964.000 dengan rasio keinginan 65,1%. Pengeluaran termasuk earbuds Lazada (Rp1.250.000), makan malam Sushi Tei, dan top-up game. Pola konsisten dengan profil Spendthrift.',
       },
       {
         wantsRatio: 0.7104,
@@ -1371,7 +1424,7 @@ async function main() {
         totalExpenses: 2_189_000,
         anomalyCount: 0,
         reportText:
-          'Minggu keempat April 2025: Total pengeluaran Rp2.189.000 dengan rasio keinginan 71%. Pengeluaran meliputi jam tangan online, makan restoran premium, dan bioskop Gold Class. Tabungan Rp500.000 berhasil dilakukan meski kecil.',
+          'Minggu keempat Mei 2026: Total pengeluaran Rp2.189.000 dengan rasio keinginan 71%. Pengeluaran meliputi jam tangan online, makan restoran premium, dan bioskop Gold Class. Tabungan Rp500.000 berhasil dilakukan meski kecil.',
       },
     ];
 
@@ -1383,22 +1436,22 @@ async function main() {
       const [bw, sw, rw] = await weeklyRepo.save([
         {
           customerId: budi.id,
-          reportDate: new Date(weeks[i].reportDate),
-          periodStart: new Date(weeks[i].periodStart),
+          reportDate: weeks[i].reportDate,
+          periodStart: weeks[i].periodStart,
           persona: PersonaEnum.TIGHTWAD,
           ...budiWeekly[i],
         },
         {
           customerId: sari.id,
-          reportDate: new Date(weeks[i].reportDate),
-          periodStart: new Date(weeks[i].periodStart),
+          reportDate: weeks[i].reportDate,
+          periodStart: weeks[i].periodStart,
           persona: PersonaEnum.UNCONFLICTED,
           ...sariWeekly[i],
         },
         {
           customerId: rian.id,
-          reportDate: new Date(weeks[i].reportDate),
-          periodStart: new Date(weeks[i].periodStart),
+          reportDate: weeks[i].reportDate,
+          periodStart: weeks[i].periodStart,
           persona: PersonaEnum.SPENDTHRIFT,
           ...rianWeekly[i],
         },
@@ -1413,7 +1466,7 @@ async function main() {
     await monthlyRepo.save([
       {
         customerId: budi.id,
-        targetMonth: '2025-04',
+        targetMonth: '2026-05',
         persona: PersonaEnum.TIGHTWAD,
         prevPersona: undefined,
         savingsRate: 0.2308,
@@ -1437,11 +1490,11 @@ async function main() {
           transaction_count: 25,
         },
         reportText:
-          'Laporan bulanan April 2025 — Budi Santoso: Total pengeluaran Rp3.358.000 dari gaji Rp6.500.000. Kebutuhan mendominasi 96,3% (Rp3.233.000), keinginan hanya 3,7% (Rp125.000). Tingkat tabungan 23,1% (Rp1.500.000) melampaui target Rp2.000.000 secara proporsional. Satu anomali terdeteksi pada pengeluaran kafe pertengahan bulan. Profil Tightwad terjaga dengan sangat baik. Rekomendasi: pertahankan pola ini dan pertimbangkan investasi reksa dana untuk dana idle.',
+          'Laporan bulanan Mei 2026 — Budi Santoso: Total pengeluaran Rp3.358.000 dari gaji Rp6.500.000. Kebutuhan mendominasi 96,3% (Rp3.233.000), keinginan hanya 3,7% (Rp125.000). Tingkat tabungan 23,1% (Rp1.500.000) melampaui target Rp2.000.000 secara proporsional. Satu anomali terdeteksi pada pengeluaran kafe pertengahan bulan. Profil Tightwad terjaga dengan sangat baik. Rekomendasi: pertahankan pola ini dan pertimbangkan investasi reksa dana untuk dana idle.',
       },
       {
         customerId: sari.id,
-        targetMonth: '2025-04',
+        targetMonth: '2026-05',
         persona: PersonaEnum.UNCONFLICTED,
         prevPersona: undefined,
         savingsRate: 0.1667,
@@ -1466,11 +1519,11 @@ async function main() {
           transaction_count: 27,
         },
         reportText:
-          'Laporan bulanan April 2025 — Sari Dewi: Total pengeluaran Rp7.859.000 dari gaji Rp12.000.000. Rasio kebutuhan 68% (Rp5.346.000) dan keinginan 32% (Rp2.513.000) mencerminkan pola Unconflicted yang sehat. Tabungan Rp2.000.000 (16,7% dari gaji) sudah baik namun masih di bawah target Rp3.000.000. Satu anomali pembelian online besar terdeteksi minggu ketiga. Rekomendasi: tingkatkan alokasi tabungan di awal bulan dan batasi belanja impuls online.',
+          'Laporan bulanan Mei 2026 — Sari Dewi: Total pengeluaran Rp7.859.000 dari gaji Rp12.000.000. Rasio kebutuhan 68% (Rp5.346.000) dan keinginan 32% (Rp2.513.000) mencerminkan pola Unconflicted yang sehat. Tabungan Rp2.000.000 (16,7% dari gaji) sudah baik namun masih di bawah target Rp3.000.000. Satu anomali pembelian online besar terdeteksi minggu ketiga. Rekomendasi: tingkatkan alokasi tabungan di awal bulan dan batasi belanja impuls online.',
       },
       {
         customerId: rian.id,
-        targetMonth: '2025-04',
+        targetMonth: '2026-05',
         persona: PersonaEnum.SPENDTHRIFT,
         prevPersona: undefined,
         savingsRate: 0.0227,
@@ -1495,7 +1548,7 @@ async function main() {
           transaction_count: 28,
         },
         reportText:
-          'Laporan bulanan April 2025 — Rian Pratama: Total pengeluaran Rp17.222.000 dari gaji Rp22.000.000. Keinginan mendominasi 59,1% (Rp10.175.000) dengan pengeluaran hiburan dan belanja online yang sangat tinggi. Tingkat tabungan hanya 2,3% (Rp500.000), jauh di bawah target Rp500.000. Satu anomali besar terdeteksi — pengeluaran club Rp3.500.000. Rekomendasi: atur auto-debit tabungan di awal bulan, batasi pengeluaran hiburan maksimal Rp2.000.000/bulan.',
+          'Laporan bulanan Mei 2026 — Rian Pratama: Total pengeluaran Rp17.222.000 dari gaji Rp22.000.000. Keinginan mendominasi 59,1% (Rp10.175.000) dengan pengeluaran hiburan dan belanja online yang sangat tinggi. Tingkat tabungan hanya 2,3% (Rp500.000), jauh di bawah target Rp500.000. Satu anomali besar terdeteksi — pengeluaran club Rp3.500.000. Rekomendasi: atur auto-debit tabungan di awal bulan, batasi pengeluaran hiburan maksimal Rp2.000.000/bulan.',
       },
     ]);
 
