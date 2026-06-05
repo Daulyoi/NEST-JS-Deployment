@@ -25,7 +25,7 @@ export class UserCredentials {
   @Column({ type: 'varchar', select: false })
   password!: string;
 
-  @Column({ type: 'char', length: 6, nullable: true, select: false })
+  @Column({ type: 'text', nullable: true, select: false })
   mpin?: string;
 
   @Column({ name: 'active_token', type: 'text', nullable: true, select: false })

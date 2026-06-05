@@ -41,11 +41,14 @@ export class RegisterUseCase {
     const savedCustomer = await this.customerRepository.save(customer);
 
     const hashedPassword = await PasswordHasher.hash(dto.password);
+    const hashedMpin = dto.mpin ? await PasswordHasher.hash(dto.mpin) : undefined;
+
     const credentials = this.credentialsRepository.create({
       customerId: savedCustomer.id,
       username: dto.username,
       email: dto.email,
       password: hashedPassword,
+      ...(hashedMpin && { mpin: hashedMpin }),
     });
     const savedCredentials = await this.credentialsRepository.save(credentials);
 

@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsString,
   Length,
+  Matches,
   MinLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -55,4 +56,11 @@ export class RegisterDto {
   @IsOptional()
   @IsNumber()
   savingsGoal?: number;
+
+  @ApiPropertyOptional({ example: '123456', description: 'PIN 6 digit angka' })
+  @IsOptional()
+  @IsString()
+  @Length(6, 6, { message: 'MPIN harus tepat 6 karakter' })
+  @Matches(/^\d{6}$/, { message: 'MPIN harus berupa 6 digit angka' })
+  mpin?: string;
 }
